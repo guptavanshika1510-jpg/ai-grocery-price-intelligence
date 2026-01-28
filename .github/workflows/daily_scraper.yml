@@ -1,9 +1,12 @@
 name: Daily Price Scraper
 
 on:
-  schedule:
-    - cron: "30 3 * * *"   # runs daily at 09:00 IST
   workflow_dispatch:
+  schedule:
+    - cron: "0 3 * * *"   # runs daily at 3 AM UTC
+
+permissions:
+  contents: write
 
 jobs:
   scrape:
@@ -24,16 +27,19 @@ jobs:
         run: |
           pip install pandas requests beautifulsoup4
 
-      - name: Run scraper
-        run: |
-          python scraper/scrape_prices.py
-
-      - name: Commit and push updated prices
+      - name: Configure git
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
 
+      - name: Run scraper
+        run: |
+          python scraper/scrape_prices.py
+
+      - name: Commit and push changes
+        run: |
           git add data/prices.csv
-          git commit -m "Auto-update prices [bot]" || echo "No changes to commit"
+          git commit -m "Auto update prices $(date -u)" || echo "No changes"
           git push
+
 
